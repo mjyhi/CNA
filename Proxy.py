@@ -138,6 +138,7 @@ while True:
       address = socket.gethostbyname(hostname)
       # Connect to the origin server
       # ~~~~ INSERT CODE ~~~~
+      address = socket.gethostbyname(hostname)
       # ~~~~ END CODE INSERT ~~~~
       print ('Connected to origin Server')
 
@@ -168,6 +169,7 @@ while True:
 
       # Get the response from the origin server
       # ~~~~ INSERT CODE ~~~~
+      
       # ~~~~ END CODE INSERT ~~~~
 
       # Send the response to the client
