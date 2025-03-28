@@ -4,6 +4,8 @@
 
 import sys
 import socket
+#Step 2
+import urllib.parse
 
 def main():
     if len(sys.argv) != 3:
@@ -36,8 +38,36 @@ def main():
 
         # Receive client request (up to 4096 bytes)
         request = client_socket.recv(4096)
+        decoded_request = request.decode(errors='ignore')
         print("Request from client:")
         print(request.decode(errors='ignore'))
+        
+        # Step 2 Parse the requested URL from the request line
+        
+        try:
+            request_lines = request.decode(errors='ignore').split('\r\n')
+            request_line = request_lines[0]
+            print("Request line:", request_line)
+            
+            method, full_url, version = request_line.split()
+            url = full_url.lstrip('/')  # remove leading "/"
+            parsed_url = urllib.parse.urlparse(url)
+
+            target_host = parsed_url.hostname
+            target_port = parsed_url.port if parsed_url.port else 80
+            target_path = parsed_url.path
+            
+            if parsed_url.query:
+                target_path += '?' + parsed_url.query
+
+            print(f"Target host: {target_host}")
+            print(f"Target port: {target_port}")
+            print(f"Target path: {target_path}")
+
+        except Exception as e:
+            print("Failed to parse request:", e)
+            client_socket.close()
+            continue
 
         # Close connection (we're not handling the request yet)
         client_socket.close()
