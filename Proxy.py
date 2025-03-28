@@ -6,6 +6,9 @@ import sys
 import socket
 #Step 2
 import urllib.parse
+#Step 3
+import os
+
 
 def main():
     if len(sys.argv) != 3:
@@ -68,9 +71,36 @@ def main():
             print("Failed to parse request:", e)
             client_socket.close()
             continue
+        
+        # Step 3: Check if file is cached
+        cache_dir = "cache"
+        if not os.path.exists(cache_dir):
+            os.makedirs(cache_dir)
 
-        # Close connection (we're not handling the request yet)
+        # If path is just '/', we use index.html
+        filename = target_path.strip("/").replace("/", "_")
+        if not filename:
+            filename = "index.html"
+
+        cache_file_path = os.path.join(cache_dir, f"{target_host}_{filename}")
+
+        if os.path.exists(cache_file_path):
+            print(f"Cache hit: {cache_file_path}")
+
+        with open(cache_file_path, "rb") as cached_file:
+            cached_data = cached_file.read()
+
+        # Send basic HTTP 200 OK header + cached content
+        response = b"HTTP/1.1 200 OK\r\n"
+        response += b"Content-Length: " + str(len(cached_data)).encode() + b"\r\n"
+        response += b"Connection: close\r\n\r\n"
+        response += cached_data
+
+        client_socket.sendall(response)
+        print("Sent cached response to client.")
+
         client_socket.close()
+        continue  # Skip contacting origin server (we'll do that in Step 4)
         
 if __name__ == "__main__":
     main()
